@@ -93,16 +93,17 @@ export class Denosaur {
     if (Array.isArray(this[r.method as Method])) {
       const url = new URL(r.url, `http://${r.headers.get("host")}`);
       const path = url.host + decodeURIComponent(url.pathname);
+      const query = new URLSearchParams(url.search);
 
       for (const route of this[r.method as Method]) {
         const m = route[0].exec(path);
         if (m) {
-          return route[1](new Request(r, m.groups ?? {}));
+          return route[1](new Request(r, m.groups ?? {}, query));
         }
       }
     }
 
-    return new Request(r, {}).error(404);
+    return new Request(r).error(404);
   }
 
   async listen(addr: string | HTTPOptions | number): Promise<void> {

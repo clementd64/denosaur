@@ -5,12 +5,18 @@ import { Chunk } from "https://deno.land/x/file_chunk/mod.ts";
 export class Request {
   readonly req: ServerRequest;
   readonly params: { [name: string]: string };
+  readonly query: URLSearchParams;
   status: number = 200;
   headers: Headers = new Headers();
 
-  constructor(req: ServerRequest, params: { [name: string]: string }) {
+  constructor(
+    req: ServerRequest,
+    params?: { [name: string]: string },
+    query?: URLSearchParams,
+  ) {
     this.req = req;
-    this.params = params;
+    this.params = params ?? {};
+    this.query = query ?? new URLSearchParams();
   }
 
   /** respond with a std/http compatible value */
