@@ -88,7 +88,7 @@ export class Denosaur {
   private handle(r: ServerRequest): Promise<void> | void {
     if (Array.isArray(this[r.method as Method])) {
       const url = new URL(r.url, `http://${r.headers.get("host")}`);
-      const path = url.host + decodeURIComponent(url.pathname);
+      const path = url.hostname + decodeURIComponent(url.pathname);
       const query = new URLSearchParams(url.search);
 
       for (const route of this[r.method as Method]) {
