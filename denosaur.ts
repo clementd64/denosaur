@@ -110,7 +110,7 @@ export class Denosaur {
       addr = { port: addr };
     }
 
-    for await (const req of serve({ port: 80 })) {
+    for await (const req of serve(addr)) {
       await this.handle(req);
     }
   }
