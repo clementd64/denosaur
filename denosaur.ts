@@ -16,48 +16,44 @@ export class Denosaur {
   private PUT: [RegExp, Handler][] = [];
   private DELETE: [RegExp, Handler][] = [];
 
-  public get(route: string, handler: Handler): Denosaur {
-    this.GET.push([
-      routeToRegExp(route),
+  private addRoute(
+    route: string | RegExp,
+    handler: Handler,
+    ...method: [RegExp, Handler][][]
+  ): Denosaur {
+    const r: [RegExp, Handler] = [
+      typeof route === "string" ? routeToRegExp(route) : route,
       handler,
-    ]);
+    ];
+    method.forEach((m) => m.push(r));
     return this;
+  }
+
+  public get(route: string, handler: Handler): Denosaur {
+    return this.addRoute(route, handler, this.GET);
   }
 
   public post(route: string, handler: Handler): Denosaur {
-    this.POST.push([
-      routeToRegExp(route),
-      handler,
-    ]);
-    return this;
+    return this.addRoute(route, handler, this.POST);
   }
 
   public put(route: string, handler: Handler): Denosaur {
-    this.PUT.push([
-      routeToRegExp(route),
-      handler,
-    ]);
-    return this;
+    return this.addRoute(route, handler, this.PUT);
   }
 
   public delete(route: string, handler: Handler): Denosaur {
-    this.DELETE.push([
-      routeToRegExp(route),
-      handler,
-    ]);
-    return this;
+    return this.addRoute(route, handler, this.DELETE);
   }
 
   public all(route: string, handler: Handler): Denosaur {
-    const r: [RegExp, Handler] = [
-      routeToRegExp(route),
+    return this.addRoute(
+      route,
       handler,
-    ];
-    this.GET.push(r);
-    this.POST.push(r);
-    this.PUT.push(r);
-    this.DELETE.push(r);
-    return this;
+      this.GET,
+      this.POST,
+      this.PUT,
+      this.DELETE,
+    );
   }
 
   public route(
@@ -71,19 +67,19 @@ export class Denosaur {
   ): Denosaur {
     const regex = routeToRegExp(route);
     if (get) {
-      this.GET.push([regex, get]);
+      this.addRoute(regex, get, this.GET);
     }
 
     if (post) {
-      this.POST.push([regex, post]);
+      this.addRoute(regex, post, this.POST);
     }
 
     if (put) {
-      this.PUT.push([regex, put]);
+      this.addRoute(regex, put, this.PUT);
     }
 
     if (del) {
-      this.DELETE.push([regex, del]);
+      this.addRoute(regex, del, this.DELETE);
     }
 
     return this;
