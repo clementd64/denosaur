@@ -1,10 +1,10 @@
 /** convert a route pattern to a RegExp */
-export function routeToRegExp(route: string): RegExp {
+export function routeToRegExp(method: string, route: string): RegExp {
   const firstSlash = route.indexOf("/");
   const host = firstSlash === -1 ? route : route.slice(0, firstSlash);
   const path = firstSlash === -1 ? "/**" : route.slice(firstSlash);
 
-  return new RegExp(`^${
+  return new RegExp(`^${method}:${
     host === "" ? "[^\/]*" : host
       .replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&") // escape regex
       .replace(/\\\*\\\*/g, "([^\/]*)") // recusive wildcard

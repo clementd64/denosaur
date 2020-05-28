@@ -8,52 +8,43 @@ import { routeToRegExp } from "./pattern.ts";
 
 export type Handler = (r: Request) => Promise<void> | void;
 
-type Method = "GET" | "POST" | "PUT" | "DELETE";
-
 export class Denosaur {
-  private GET: [RegExp, Handler][] = [];
-  private POST: [RegExp, Handler][] = [];
-  private PUT: [RegExp, Handler][] = [];
-  private DELETE: [RegExp, Handler][] = [];
+  private _route: [RegExp, Handler][] = [];
 
   private addRoute(
-    route: string | RegExp,
+    method: string,
+    route: string,
     handler: Handler,
-    ...method: [RegExp, Handler][][]
   ): Denosaur {
-    const r: [RegExp, Handler] = [
-      typeof route === "string" ? routeToRegExp(route) : route,
+    this._route.push([
+      routeToRegExp(method, route),
       handler,
-    ];
-    method.forEach((m) => m.push(r));
+    ])
     return this;
   }
 
   public get(route: string, handler: Handler): Denosaur {
-    return this.addRoute(route, handler, this.GET);
+    return this.addRoute("GET", route, handler);
   }
 
   public post(route: string, handler: Handler): Denosaur {
-    return this.addRoute(route, handler, this.POST);
+    return this.addRoute("POST", route, handler);
   }
 
   public put(route: string, handler: Handler): Denosaur {
-    return this.addRoute(route, handler, this.PUT);
+    return this.addRoute("PUT", route, handler);
   }
 
   public delete(route: string, handler: Handler): Denosaur {
-    return this.addRoute(route, handler, this.DELETE);
+    return this.addRoute("DELETE", route, handler);
   }
 
   public all(route: string, handler: Handler): Denosaur {
-    return this.addRoute(
-      route,
-      handler,
-      this.GET,
-      this.POST,
-      this.PUT,
-      this.DELETE,
-    );
+    this.get(route, handler);
+    this.post(route, handler);
+    this.put(route, handler);
+    this.delete(route, handler);
+    return this;
   }
 
   public route(
@@ -65,37 +56,34 @@ export class Denosaur {
       delete?: Handler;
     },
   ): Denosaur {
-    const regex = routeToRegExp(route);
     if (get) {
-      this.addRoute(regex, get, this.GET);
+      this.get(route, get);
     }
 
     if (post) {
-      this.addRoute(regex, post, this.POST);
+      this.post(route, post);
     }
 
     if (put) {
-      this.addRoute(regex, put, this.PUT);
+      this.put(route, put);
     }
 
     if (del) {
-      this.addRoute(regex, del, this.DELETE);
+      this.delete(route, del);
     }
 
     return this;
   }
 
   private handle(r: ServerRequest): Promise<void> | void {
-    if (Array.isArray(this[r.method as Method])) {
-      const url = new URL(r.url, `http://${r.headers.get("host")}`);
-      const path = url.hostname + decodeURIComponent(url.pathname);
-      const query = new URLSearchParams(url.search);
+    const url = new URL(r.url, `http://${r.headers.get("host")}`);
+    const path = `${r.method}:${url.hostname}${decodeURIComponent(url.pathname)}`;
+    const query = new URLSearchParams(url.search);
 
-      for (const route of this[r.method as Method]) {
-        const m = route[0].exec(path);
-        if (m) {
-          return route[1](new Request(r, m.groups ?? {}, query));
-        }
+    for (const route of this._route) {
+      const m = route[0].exec(path);
+      if (m) {
+        return route[1](new Request(r, m.groups ?? {}, query));
       }
     }
 
