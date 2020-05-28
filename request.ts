@@ -40,6 +40,12 @@ export class Request {
     return this.respond(text);
   }
 
+  /** respond with a html page (set content-type to text/html) */
+  html(html: any): Promise<void> {
+    this.headers.set("content-type", "text/html; charset=utf8");
+    return this.respond(html);
+  }
+
   /** respond with a json value (set content-type to application/json) */
   json(json: any): Promise<void> {
     this.headers.set("content-type", "application/json; charset=utf8");
