@@ -9,18 +9,24 @@ export class Request {
   status: number = 200;
   headers: Headers = new Headers();
 
+  private _finilized: boolean = false;
+  get finilized(): boolean {
+    return this._finilized;
+  }
+
   constructor(
     req: ServerRequest,
-    params?: { [name: string]: string },
-    query?: URLSearchParams,
+    params: { [name: string]: string } = {},
+    query: URLSearchParams = new URLSearchParams(),
   ) {
     this.req = req;
-    this.params = params ?? {};
-    this.query = query ?? new URLSearchParams();
+    this.params = params;
+    this.query = query;
   }
 
   /** respond with a std/http compatible value */
   respond(body: Uint8Array | Deno.Reader | string): Promise<void> {
+    this._finilized = true;
     return this.req.respond({
       status: this.status,
       headers: this.headers,

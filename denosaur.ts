@@ -9,33 +9,33 @@ import { routeToRegExp } from "./pattern.ts";
 export type Handler = (r: Request) => Promise<void> | void;
 
 export class Denosaur {
-  private _route: [RegExp, Handler][] = [];
+  private _route: [RegExp, Handler[]][] = [];
 
   private addRoute(
     method: string,
     route: string,
-    handler: Handler,
+    handler: Handler[],
   ): Denosaur {
     this._route.push([
       routeToRegExp(method, route),
       handler,
-    ])
+    ]);
     return this;
   }
 
-  public get(route: string, handler: Handler): Denosaur {
+  public get(route: string, ...handler: Handler[]): Denosaur {
     return this.addRoute("GET", route, handler);
   }
 
-  public post(route: string, handler: Handler): Denosaur {
+  public post(route: string, ...handler: Handler[]): Denosaur {
     return this.addRoute("POST", route, handler);
   }
 
-  public put(route: string, handler: Handler): Denosaur {
+  public put(route: string, ...handler: Handler[]): Denosaur {
     return this.addRoute("PUT", route, handler);
   }
 
-  public delete(route: string, handler: Handler): Denosaur {
+  public delete(route: string, ...handler: Handler[]): Denosaur {
     return this.addRoute("DELETE", route, handler);
   }
 
@@ -75,15 +75,25 @@ export class Denosaur {
     return this;
   }
 
-  private handle(r: ServerRequest): Promise<void> | void {
+  private async handle(r: ServerRequest): Promise<void> {
     const url = new URL(r.url, `http://${r.headers.get("host")}`);
-    const path = `${r.method}:${url.hostname}${decodeURIComponent(url.pathname)}`;
+    const path = `${r.method}:${url.hostname}${
+      decodeURIComponent(url.pathname)
+    }`;
     const query = new URLSearchParams(url.search);
 
-    for (const route of this._route) {
-      const m = route[0].exec(path);
+    for (const [pattern, handlers] of this._route) {
+      const m = pattern.exec(path);
       if (m) {
-        return route[1](new Request(r, m.groups ?? {}, query));
+        const request = new Request(r, m.groups ?? {}, query);
+        for (const handler of handlers) {
+          await handler(request);
+          if (request.finilized) return;
+        }
+        if (!request.finilized) {
+          return request.error(500);
+        }
+        return;
       }
     }
 
@@ -96,7 +106,12 @@ export class Denosaur {
     }
 
     for await (const req of serve(addr)) {
-      await this.handle(req);
+      this.handle(req).catch(() =>
+        req.respond({
+          status: 500,
+          body: "500 Internal Server Error",
+        }).catch(() => {})
+      );
     }
   }
 }
