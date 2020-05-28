@@ -85,7 +85,7 @@ export class Denosaur {
     for (const [pattern, handlers] of this._route) {
       const m = pattern.exec(path);
       if (m) {
-        const request = new Request(r, m.groups ?? {}, query);
+        const request = new Request(r, m.groups ?? {}, query, m);
         for (const handler of handlers) {
           await handler(request);
           if (request.finilized) return;

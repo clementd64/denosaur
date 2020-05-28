@@ -6,6 +6,7 @@ export class Request {
   readonly req: ServerRequest;
   readonly params: { [name: string]: string };
   readonly query: URLSearchParams;
+  readonly match: string[];
   status: number = 200;
   headers: Headers = new Headers();
 
@@ -18,10 +19,12 @@ export class Request {
     req: ServerRequest,
     params: { [name: string]: string } = {},
     query: URLSearchParams = new URLSearchParams(),
+    match: string[] = [],
   ) {
     this.req = req;
     this.params = params;
     this.query = query;
+    this.match = match;
   }
 
   /** respond with a std/http compatible value */
