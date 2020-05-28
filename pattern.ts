@@ -12,7 +12,7 @@ export function routeToRegExp(method: string, route: string): RegExp {
   }${
     path
       .replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&") // escape regex
-      .replace(/#(\w+)/g, "(?<$1>\d+)") // named number capturing
+      .replace(/#(\w+)/g, "(?<$1>\\d+)") // named number capturing
       .replace(/:(\w+)/g, "(?<$1>[^\\/]+)") // named capturing
       .replace(/\\\*\\\*/g, "(.*)") // recusive wildcard
       .replace(/\\\*/g, "([^\/]*)") // wildcard
