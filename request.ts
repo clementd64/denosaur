@@ -1,5 +1,5 @@
-import { ServerRequest } from "https://deno.land/std@0.53.0/http/server.ts";
-import { STATUS_TEXT } from "https://deno.land/std@0.52.0/http/http_status.ts";
+import { ServerRequest } from "https://deno.land/std@0.57.0/http/server.ts";
+import { STATUS_TEXT } from "https://deno.land/std@0.57.0/http/http_status.ts";
 import { Chunk } from "https://deno.land/x/file_chunk/mod.ts";
 
 export class Request {

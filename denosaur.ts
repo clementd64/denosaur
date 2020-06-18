@@ -2,7 +2,7 @@ import {
   serve,
   HTTPOptions,
   ServerRequest,
-} from "https://deno.land/std@0.53.0/http/server.ts";
+} from "https://deno.land/std@0.57.0/http/server.ts";
 import { Request } from "./request.ts";
 import { routeToRegExp } from "./pattern.ts";
 
