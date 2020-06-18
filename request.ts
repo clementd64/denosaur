@@ -65,12 +65,12 @@ export class Request {
    * use fileAutoPart for automatic request range detection */
   async filePart(path: string, start: number, end?: number): Promise<void> {
     const size = (await Deno.stat(path)).size;
-    end = end ?? size - 1;
+    end = end ?? size;
 
     this.status = 206;
     this.headers.set("accept-ranges", "bytes");
-    this.headers.set("content-range", `bytes ${start}-${end}/${size}`);
-    this.headers.set("content-length", (end - start + 1).toString());
+    this.headers.set("content-range", `bytes ${start}-${end - 1}/${size}`);
+    this.headers.set("content-length", (end - start).toString());
 
     return this.respond(await Chunk.open(path, start, end));
   }
