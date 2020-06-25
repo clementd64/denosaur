@@ -2,7 +2,7 @@ import {
   serve,
   HTTPOptions,
   ServerRequest,
-} from "https://deno.land/std@0.57.0/http/server.ts";
+} from "https://deno.land/std@0.58.0/http/server.ts";
 import { Request } from "./request.ts";
 import { routeToRegExp } from "./pattern.ts";
 
@@ -83,21 +83,21 @@ export class Denosaur {
     const query = new URLSearchParams(url.search);
 
     for (const [pattern, handlers] of this._route) {
-      const m = pattern.exec(path);
-      if (m) {
-        const request = new Request(r, m.groups ?? {}, query, m);
+      const match = pattern.exec(path);
+      if (match) {
+        const request = new Request(r, match.groups ?? {}, query, match);
         for (const handler of handlers) {
           await handler(request);
-          if (request.finilized) return;
+          if (request.s.finilized) return;
         }
-        if (!request.finilized) {
-          return request.error(500);
+        if (!request.s.finilized) {
+          return request.s.error(500);
         }
         return;
       }
     }
 
-    return new Request(r).error(404);
+    return new Request(r).s.error(404);
   }
 
   async listen(addr: string | HTTPOptions | number): Promise<void> {

@@ -1,30 +1,33 @@
-import { ServerRequest } from "https://deno.land/std@0.57.0/http/server.ts";
-import { STATUS_TEXT } from "https://deno.land/std@0.57.0/http/http_status.ts";
+import { ServerRequest } from "https://deno.land/std@0.58.0/http/server.ts";
+import { STATUS_TEXT } from "https://deno.land/std@0.58.0/http/http_status.ts";
 import { Chunk } from "https://deno.land/x/file_chunk/mod.ts";
 
-export class Request {
+class _Request {
+  readonly url: string;
+  readonly method: string;
+  readonly headers: Headers;
   readonly req: ServerRequest;
-  readonly params: { [name: string]: string };
-  readonly query: URLSearchParams;
-  readonly match: string[];
+
+  constructor(req: ServerRequest) {
+    this.req = req;
+    this.url = req.url;
+    this.method = req.method;
+    this.headers = req.headers;
+  }
+}
+
+class _Response {
+  private req: ServerRequest;
   status: number = 200;
   headers: Headers = new Headers();
+
+  constructor(req: ServerRequest) {
+    this.req = req;
+  }
 
   private _finilized: boolean = false;
   get finilized(): boolean {
     return this._finilized;
-  }
-
-  constructor(
-    req: ServerRequest,
-    params: { [name: string]: string } = {},
-    query: URLSearchParams = new URLSearchParams(),
-    match: string[] = [],
-  ) {
-    this.req = req;
-    this.params = params;
-    this.query = query;
-    this.match = match;
   }
 
   /** respond with a std/http compatible value */
@@ -108,5 +111,26 @@ export class Request {
     this.status = status;
     this.headers = new Headers();
     return this.text(`${status} ${STATUS_TEXT.get(status)}`);
+  }
+}
+
+export class Request {
+  readonly q: _Request;
+  readonly s: _Response;
+  readonly params: { [name: string]: string };
+  readonly query: URLSearchParams;
+  readonly match: string[];
+
+  constructor(
+    req: ServerRequest,
+    params: { [name: string]: string } = {},
+    query: URLSearchParams = new URLSearchParams(),
+    match: string[] = [],
+  ) {
+    this.q = new _Request(req);
+    this.s = new _Response(req);
+    this.params = params;
+    this.query = query;
+    this.match = match;
   }
 }
